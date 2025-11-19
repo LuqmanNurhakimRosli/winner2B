@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 1
+names: ['Face']
+
+roboflow:
+  workspace: face-recognition-kgiiy
+  project: passport-images-opm09
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/face-recognition-kgiiy/passport-images-opm09/dataset/1
