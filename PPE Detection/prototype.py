@@ -31,7 +31,7 @@ class PPEApp:
         self.chat_id = 763389477
         self.required_classes = {"face-mask", "gloves", "helmet", "shoes", "safety-vest"}
         self.last_missing_time = None
-        self.delay_seconds = 10  # Delay between alerts in seconds
+        self.delay_seconds = 20
 
         # Main layout: sidebar (left), main panel (right)
         self.sidebar = tk.Frame(window, bg="#393E46", width=220)
@@ -69,12 +69,8 @@ class PPEApp:
         self.canvas.pack(fill="both", expand=True, padx=30, pady=10)
         self.image_container = self.canvas.create_image(0, 0, anchor="nw")
 
-        # Camera / run state
         self.cap = None
         self.running = False
-        # Target FPS (can be adjusted)
-        self.target_fps = 60
-        self.frame_interval = 1.0 / float(self.target_fps)
 
         self.window.bind("<Configure>", self.on_resize)
 
@@ -84,6 +80,9 @@ class PPEApp:
             w = self.canvas.winfo_width()
             h = self.canvas.winfo_height()
             self.canvas.config(width=w, height=h)
+
+        self.cap = None
+        self.running = False
 
     def upload_image(self):
         file_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.jpg *.jpeg *.png")])
@@ -103,11 +102,6 @@ class PPEApp:
         if self.running:
             return
         self.cap = cv2.VideoCapture(0)
-        # try to request camera FPS (some cameras/drivers ignore this)
-        try:
-            self.cap.set(cv2.CAP_PROP_FPS, float(self.target_fps))
-        except Exception:
-            pass
         self.running = True
         self.alert_label.config(text="Starting Camera...", fg="#FFD369")
         threading.Thread(target=self.update_camera_feed, daemon=True).start()
@@ -122,7 +116,6 @@ class PPEApp:
     def update_camera_feed(self):
         prev_time = time.time()
         while self.running and self.cap.isOpened():
-            loop_start = time.time()
             ret, frame = self.cap.read()
             if not ret:
                 break
@@ -151,22 +144,10 @@ class PPEApp:
             self.window.after(0, lambda: self.missing_label.config(text=status_text, fg=status_color))
 
             annotated = results[0].plot()
-
-            # measured fps (processing fps)
             now = time.time()
-            measured_fps = 1.0 / max(1e-6, (now - prev_time))
+            fps = 1 / (now - prev_time)
             prev_time = now
-
-            # Throttle to target fps: sleep the remainder of the frame interval
-            loop_end = time.time()
-            elapsed = loop_end - loop_start
-            sleep_time = max(0.0, self.frame_interval - elapsed)
-            if sleep_time > 0:
-                time.sleep(sleep_time)
-
-            # Display frame and the measured fps (clamped)
-            display_fps = min(measured_fps, self.target_fps)
-            self.window.after(0, lambda ann=annotated, f=display_fps: self.display_camera_frame(ann, f))
+            self.window.after(0, lambda ann=annotated, f=fps: self.display_camera_frame(ann, f))
 
         if self.cap:
             self.cap.release()

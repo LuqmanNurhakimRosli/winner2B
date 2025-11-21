@@ -5,5 +5,8 @@ __pycache__/
 *.pyd
 .mypy_cache/
 *.log
+*.zip
 FYP Zatul/venv/
 PPE Detection/.venv/
+Raul/
+problem solve/
