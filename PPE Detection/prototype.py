@@ -27,8 +27,8 @@ class PPEApp:
         self.model = YOLO(self.model_path).to(self.device)
 
         # Telegram bot setup (optional)
-        self.bot_token = "8165098639:AAGvhfSKsEbg86dhL0YK3yPkVKSCb9PeXvs"
-        self.chat_id = 763389477
+        self.bot_token = "YOUR_TELEGRAM_BOT_TOKEN_HERE"  # Replace with your bot token
+        self.chat_id = "YOUR_CHAT_ID_HERE"  # Replace with your chat ID
         self.required_classes = {"face-mask", "gloves", "helmet", "shoes", "safety-vest"}
         self.last_missing_time = None
         self.delay_seconds = 20
